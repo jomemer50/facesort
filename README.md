@@ -1,7 +1,6 @@
 # FaceSort
 
-Sort your photo library into per-person folders by **face identity** — like Google
-Photos, but local and private. Group photos are copied into **every** person's
+I got annoyed at myself for taking too many photos at events to sort, so I made Facesort. Sort your photo library into per-person folders by **face identity** locally and private. Group photos are copied into **every** person's
 folder who appears in them. Originals are never moved or deleted (non-destructive).
 
 ![modes: auto-cluster, reference matching, or both]
@@ -27,8 +26,8 @@ On first run the `buffalo_l` model (~330 MB) downloads to `~/.insightface`.
 ## Run
 ```bash
 facesort                 # launches the GUI
-python -m facesort       # same
-python -m facesort.scripts.demo   # build a 2-person sample library + group photo and sort it (great smoke test)
+python3 -m facesort       # same
+python3 -m facesort.scripts.demo   # build a 2-person sample library + group photo and sort it (great smoke test)
 ```
 
 ## How it works
@@ -43,7 +42,7 @@ python -m facesort.scripts.demo   # build a 2-person sample library + group phot
 Produces a standalone native binary on each platform:
 ```bash
 pip install pyinstaller
-python build.py
+python3 build.py
 # output: dist/FaceSort  (or FaceSort.exe on Windows, FaceSort.app on macOS)
 ```
 Build on the OS you target (PyInstaller does not cross-compile).
