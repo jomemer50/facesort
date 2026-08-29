@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "facesort"
+version = "0.1.0"
+description = "Sort photos into per-person folders by face (Google Photos style)."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "opencv-python-headless>=4.7",
+    "onnxruntime>=1.16",
+    "insightface>=0.7.3",
+    "scikit-learn>=1.3",
+    "PySide6>=6.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+facesort = "facesort.__main__:main"
