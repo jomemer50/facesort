@@ -10,6 +10,7 @@ import insightface
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
+ASSETS = ROOT / "assets"
 
 # InsightFace's get_object() resolves data files relative to sys._MEIPASS/objects
 # when frozen, so its `data/objects` directory must be bundled at the bundle
@@ -23,12 +24,17 @@ _INSIGHTFACE_DATAS = [
 # Explicit: insightface/data/objects  ->  <bundle>/objects
 _INSIGHTFACE_DATAS.append(f"{_OBJECTS_SRC};objects")
 
+# App icon (so the frozen exe can show the window/taskbar icon).
+if (ASSETS / "favicon.png").exists():
+    _INSIGHTFACE_DATAS.append(f"{ASSETS / 'favicon.png'};assets/favicon.png")
+
 ARGS = [
     str(ROOT / "run.py"),
     "--name", "FaceSort",
     "--onefile",
     "--windowed",
     "--clean",
+    "--icon", str(ASSETS / "favicon.ico"),
     "--paths", str(SRC),
     "--hidden-import", "sklearn",
     "--hidden-import", "scipy",

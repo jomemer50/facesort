@@ -3,9 +3,18 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from .ui.main_window import MainWindow
+
+
+def _app_icon() -> QIcon | None:
+    icon = Path(__file__).resolve().parent.parent.parent / "assets" / "favicon.png"
+    if icon.exists():
+        return QIcon(str(icon))
+    return None
+
 
 
 def _redirect_streams_if_windowed() -> None:
@@ -27,6 +36,9 @@ def _redirect_streams_if_windowed() -> None:
 def main() -> int:
     _redirect_streams_if_windowed()
     app = QApplication([])
+    icon = _app_icon()
+    if icon is not None:
+        app.setWindowIcon(icon)
     win = MainWindow()
     win.show()
     return app.exec()
