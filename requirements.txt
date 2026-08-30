@@ -3,5 +3,6 @@ opencv-python-headless>=4.7
 onnxruntime>=1.16
 insightface>=0.7.3
 scikit-learn>=1.3
+faiss-cpu>=1.13
 PySide6>=6.6
 pytest>=8.0

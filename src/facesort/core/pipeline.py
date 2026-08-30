@@ -105,14 +105,21 @@ class Session:
                 ]
                 if embs:
                     centroids[name] = mean_embedding(embs)
+
+            unclustered_name = self.cluster_names.get(-1)
             for f in self.faces:
                 best_name, best_score = None, -1.0
                 for name, cen in centroids.items():
+                    if name == unclustered_name:
+                        continue
                     score = cosine_similarity(f.embedding, cen)
                     if score > best_score:
                         best_score, best_name = score, name
                 if best_name is not None and best_score >= MATCH_THRESHOLD:
                     mapping.setdefault(f.image_path, set()).add(best_name)
+                elif unclustered_name is not None:
+                    # Faces that don't match any named person land in Unclustered.
+                    mapping.setdefault(f.image_path, set()).add(unclustered_name)
 
         if "reference" in modes:
             for face in self.faces:

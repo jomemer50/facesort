@@ -9,7 +9,7 @@ folder who appears in them. Originals are never moved or deleted (non-destructiv
 - **Native desktop GUI** (Python + PySide6) with native file dialogs — direct access to your file system.
 - **Face recognition** via [InsightFace](https://github.com/deepinsight/insightface) `buffalo_l` (RetinaFace detector + ArcFace, 512-d embeddings).
 - **Two identification modes** (use either or both):
-  - **Auto-cluster**: faces are grouped automatically (DBSCAN on cosine distance); you name each cluster.
+  - **Auto-cluster**: faces are grouped automatically (FAISS k-NN graph on cosine similarity); you name each cluster.
   - **Reference matching**: supply a few photos of known people; everything is matched against them.
 - **Group photos** → copied into each recognized person's folder.
 - **Fast re-scans**: detections are cached in a SQLite database keyed by file mtime. A **Force re-scan** option (in the GUI) drops the cache when you need a clean start.
@@ -62,7 +62,11 @@ The application code is MIT. The `buffalo_l` InsightFace model is released for
 commercial deployment.
 
 ## Limitations
-- DBSCAN clustering is O(n²) in the number of faces; very large libraries may
-  need a FAISS index (noted as a future optimization).
 - A person who appears in **only** a single photo and is never named (or given a
   reference) cannot be identified; they land in `Unknown`.
+
+## Performance
+Clustering uses a FAISS index over L2-normalized embeddings. Small libraries use
+an exact flat index; very large libraries (> `_APPROX_THRESHOLD` faces) switch to
+an approximate HNSW index so the k-NN search stays sub-quadratic. If `faiss-cpu`
+is not installed, clustering falls back to sklearn DBSCAN.

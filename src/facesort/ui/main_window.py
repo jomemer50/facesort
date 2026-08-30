@@ -159,8 +159,14 @@ class MainWindow(QMainWindow):
             return
         modes = self._current_modes()
         if "cluster" in modes:
-            for cid, name in self.cluster_review.collect().items():
-                self.session.name_cluster(cid, name)
+            # Auto-name included-but-unnamed clusters ("Person 1", …) so Sort
+            # always produces output; the user can rename folders afterwards.
+            n = 1
+            for cid, edit, include in self.cluster_review.cards:
+                if include.isChecked():
+                    name = edit.text().strip() or f"Cluster {cid}"
+                    n += 1
+                    self.session.name_cluster(cid, name)
 
         self.sort_btn.setEnabled(False)
         self.progress.setRange(0, 0)
@@ -179,6 +185,18 @@ class MainWindow(QMainWindow):
         self.progress.setRange(0, 1)
         self.progress.setValue(1)
         self.sort_btn.setEnabled(True)
+        if not counts:
+            QMessageBox.warning(
+                self,
+                "Nothing to sort",
+                "No photos were copied. This usually means there were no named "
+                "clusters and no reference people.\n\n"
+                "In Auto-cluster mode, type a name for at least one cluster "
+                "(or leave it blank to use 'Person 1', etc.). In Reference mode, "
+                "add at least one reference photo.",
+            )
+            self._set_status("Sort produced no output.")
+            return
         summary = "\n".join(f"  {name}: {n} photo(s)" for name, n in sorted(counts.items()))
         QMessageBox.information(self, "Sorting complete", f"Copied photos into:\n{summary}")
         self._set_status(f"Sorted into {len(counts)} folders.")

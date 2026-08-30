@@ -50,3 +50,35 @@ def test_cluster_single_face() -> None:
 def test_cluster_empty() -> None:
     labels = cluster_embeddings([])
     assert len(labels) == 0
+
+
+def test_faiss_noise_small_components() -> None:
+    """Components smaller than min_samples are labeled -1 (noise)."""
+    rng = np.random.default_rng(0)
+    c1 = rng.standard_normal(512).astype(np.float32)
+    c1 /= np.linalg.norm(c1)
+    c2 = rng.standard_normal(512).astype(np.float32)
+    c2 /= np.linalg.norm(c2)
+    p1a = c1 + 1e-3 * rng.standard_normal(512).astype(np.float32)
+    p1b = c1 + 1e-3 * rng.standard_normal(512).astype(np.float32)
+    embs = [p1a, p1b, c2, -c2]
+    labels = cluster_embeddings(embs, eps=0.2, min_samples=2)
+    assert count_clusters(labels) == 1
+    assert list(labels).count(-1) == 2
+
+
+def test_faiss_large_approx() -> None:
+    """The approximate HNSW path clusters >2000 faces into clean groups."""
+    rng = np.random.default_rng(1)
+    n_clusters, per = 5, 500
+    base = rng.standard_normal((n_clusters, 512)).astype(np.float32)
+    base /= np.linalg.norm(base, axis=1, keepdims=True)
+    embs = []
+    for ci in range(n_clusters):
+        for _ in range(per):
+            e = base[ci] + 0.001 * rng.standard_normal(512).astype(np.float32)
+            embs.append(e)
+    labels = cluster_embeddings(embs, eps=0.05, min_samples=5)
+    assert count_clusters(labels) == n_clusters
+    for group in group_by_label([_face(e) for e in embs], labels).values():
+        assert len(group) == per

@@ -40,6 +40,7 @@ ARGS = [
     "--hidden-import", "scipy",
     "--hidden-import", "onnxruntime",
     "--hidden-import", "cv2",
+    "--hidden-import", "faiss",
     "--hidden-import", "insightface",
     "--hidden-import", "PySide6.QtWidgets",
     "--hidden-import", "PySide6.QtGui",

@@ -49,18 +49,19 @@ class ClusterReview(QScrollArea):
             v.addLayout(strip)
 
             row = QHBoxLayout()
-            if cid != -1:
-                include = QCheckBox("include")
-                include.setChecked(True)
-                row.addWidget(include)
+            include = QCheckBox("include")
+            include.setChecked(True)
+            row.addWidget(include)
             name_edit = QLineEdit()
+            if cid == -1:
+                name_edit.setText("Unclustered")
             name_edit.setPlaceholderText("Person name…")
             row.addWidget(QLabel("Name:"))
             row.addWidget(name_edit, 1)
             v.addLayout(row)
 
             self.layout.addWidget(box)
-            if cid != -1:
+            if len(faces) > 0:
                 self.cards.append((cid, name_edit, include))
 
     def clear(self) -> None:
