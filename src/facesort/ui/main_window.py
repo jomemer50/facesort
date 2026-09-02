@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from ..core.pipeline import Session
 from .cluster_review import ClusterReview
+from .integrations_panel import IntegrationsPanel
 from .reference_manager import ReferenceManager
 from .widgets import FolderPicker
 from .worker import Worker
@@ -43,6 +44,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         root = QVBoxLayout(central)
 
+        self.integrations = IntegrationsPanel()
+        self.integrations.on_input_staged = self._on_onedrive_input_staged
+        self.integrations.on_output_chosen = self._on_onedrive_output_chosen
+        root.addWidget(self.integrations)
+
         self.input_picker = FolderPicker("Input folder:")
         self.output_picker = FolderPicker("Output folder:")
         root.addWidget(self.input_picker)
@@ -64,8 +70,12 @@ class MainWindow(QMainWindow):
         self.scan_btn = QPushButton("Scan")
         self.sort_btn = QPushButton("Sort")
         self.sort_btn.setEnabled(False)
+        self.upload_btn = QPushButton("Upload to OneDrive")
+        self.upload_btn.setEnabled(False)
+        self.upload_btn.clicked.connect(self._run_upload)
         btn_row.addWidget(self.scan_btn)
         btn_row.addWidget(self.sort_btn)
+        btn_row.addWidget(self.upload_btn)
         root.addLayout(btn_row)
 
         self.progress = QProgressBar()
@@ -86,6 +96,52 @@ class MainWindow(QMainWindow):
 
     def _set_status(self, text: str) -> None:
         self.status.setText(text)
+
+    # --- OneDrive ---------------------------------------------------------
+    def _on_onedrive_input_staged(self, local_dir, od_info) -> None:
+        self.input_picker.set_path(str(local_dir))
+        self.upload_btn.setEnabled(
+            od_info is not None and self.integrations.output_parent() is not None
+        )
+
+    def _on_onedrive_output_chosen(self, od_info, staging_dir) -> None:
+        self.output_picker.set_path(str(staging_dir))
+        self.upload_btn.setEnabled(True)
+        self._set_status(
+            "OneDrive output set. Run Scan + Sort, then click 'Upload to OneDrive'."
+        )
+
+    def _run_upload(self) -> None:
+        out_path = self.output_picker.path()
+        if not out_path or not Path(out_path).is_dir():
+            QMessageBox.warning(self, "Upload", "Select a valid output folder first.")
+            return
+        self.upload_btn.setEnabled(False)
+        self.progress.setRange(0, 0)
+        self._set_status("Uploading to OneDrive…")
+        w = self.integrations.upload_output(Path(out_path))
+        if w is None:
+            QMessageBox.information(
+                self, "Upload", "No OneDrive output selected yet."
+            )
+            self.upload_btn.setEnabled(False)
+            self.progress.setRange(0, 1)
+            self._set_status("Ready.")
+            return
+        w.finished.connect(lambda _r: self._on_upload_done())
+        w.error.connect(self._on_upload_error)
+
+    def _on_upload_done(self) -> None:
+        self.progress.setRange(0, 1)
+        self.progress.setValue(1)
+        self.upload_btn.setEnabled(True)
+        self._set_status("Upload to OneDrive complete.")
+
+    def _on_upload_error(self, msg: str) -> None:
+        self.progress.setRange(0, 1)
+        self.upload_btn.setEnabled(True)
+        QMessageBox.critical(self, "Upload error", msg)
+        self._set_status("OneDrive upload failed.")
 
     # --- scan -------------------------------------------------------------
     def _run_scan(self) -> None:

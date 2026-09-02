@@ -50,11 +50,37 @@ Build on the OS you target (PyInstaller does not cross-compile).
 ## Project layout
 ```
 src/facesort/
-  core/        face engine, cache, scanner, clustering, matcher, sorter, pipeline
-  ui/          PySide6 main window, cluster review, reference manager, widgets
-  scripts/     demo + smoke CLI helpers
-tests/         pytest suite (unit + full end-to-end with real faces)
+  core/         face engine, cache, scanner, clustering, matcher, sorter, pipeline
+  integrations/ OneDrive (Azure MSAL OAuth + Graph REST)
+  ui/           PySide6 main window, OneDrive picker/integrations, widgets
+  scripts/      demo + smoke CLI helpers
+tests/          pytest suite (unit + full end-to-end with real faces)
 ```
+
+## Cloud: OneDrive
+
+FaceSort can use Microsoft OneDrive as a photo **input** (download your camera
+roll / a folder, sort it locally) and as an **output** (upload the sorted
+person folders back to OneDrive).
+
+To enable it you need a free Azure AD "app registration" (the same app works for
+personal Microsoft accounts — Outlook/Hotmail — and work/school accounts):
+
+1. Go to https://portal.azure.com → **App registrations** → **New registration**.
+   - Supported account types: *Accounts in any organizational directory and
+     personal Microsoft accounts*.
+2. **Authentication** → **Add a platform** → **Mobile and desktop applications**
+   → Redirect URI `http://localhost`.
+3. **API permissions** → **Microsoft Graph** → **Delegated**: add
+   `Files.ReadWrite` and `User.Read`.
+4. Copy the *Application (client) ID* into `onedrive_client.json` (see
+   `onedrive_client.json.example`), or set the `FACESORT_ONEDRIVE_CLIENT_ID`
+   environment variable.
+
+In the app, the **Cloud** panel lets you connect (browser sign-in, popup-free
+loopback), pick a OneDrive input folder (staged to `~/.facesort/cache/onedrive/`),
+and pick a OneDrive output folder; after Sort, click **Upload to OneDrive**.
+Tokens are cached in `~/.facesort/onedrive_token.json`.
 
 ## License / model terms
 The application code is MIT. The `buffalo_l` InsightFace model is released for
@@ -70,3 +96,4 @@ Clustering uses a FAISS index over L2-normalized embeddings. Small libraries use
 an exact flat index; very large libraries (> `_APPROX_THRESHOLD` faces) switch to
 an approximate HNSW index so the k-NN search stays sub-quadratic. If `faiss-cpu`
 is not installed, clustering falls back to sklearn DBSCAN.
+~

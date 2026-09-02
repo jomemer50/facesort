@@ -1,0 +1,16 @@
+# Copy this file to `onedrive_client.json` and fill in your Azure AD app's
+# client id to enable OneDrive in FaceSort. Do NOT commit the real file.
+#
+# Create the app in https://portal.azure.com -> App registrations -> New:
+#   - Account types: "Accounts in any organizational directory and personal
+#     Microsoft accounts" (this enables consumer/hotmail/outlook accounts).
+#   - Authentication -> Add a platform -> Mobile and desktop applications ->
+#     Redirect URI: http://localhost  (loopback; FaceSort uses a random port).
+#   - API permissions -> Add Microsoft Graph -> Delegated:
+#       Files.ReadWrite, User.Read
+#   - Copy the Application (client) ID.
+{
+  "client_id": "PASTE_YOUR_CLIENT_ID_HERE",
+  "authority": "https://login.microsoftonline.com/common",
+  "redirect_uri": "http://localhost"
+}

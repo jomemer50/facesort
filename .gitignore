@@ -18,3 +18,8 @@ Thumbs.db
 
 # Test artifacts
 .pytest_cache/
+
+# Cloud credentials (do NOT commit your real client secret/id)
+onedrive_client.json
+client_config.onedrive.json
+*.token.json
